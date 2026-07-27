@@ -128,16 +128,53 @@ You can add more tests in `tests/test_recommender.py`.
 
 ## Sample Recommendation Output
 
-Paste a sample of your recommender's output here as a text block so a reader can see what it produces:
+Below is the actual terminal output of `python -m src.main` for the default
+**pop / happy / high-energy** profile. Each recommendation shows the song title,
+its final score, and the specific reasons (with the points each rule awarded):
 
 ```
-# e.g.:
-# User profile: genre=indie, mood=chill, energy=low
-# Recommendations:
-#   1. ...
-#   2. ...
-#   3. ...
+Loaded songs: 18
+
+Top 5 recommendations for profile: pop / happy / energy 0.8
+
+1. Sunrise City — Neon Echo  (score: 0.95)
+     • genre match: pop (+0.25)
+     • mood match: happy (+0.20)
+     • energy close to target (+0.20)
+     • produced/electronic match (+0.12)
+     • vocal match (+0.10)
+     • popular pick (+0.08)
+
+2. Gym Hero — Max Pulse  (score: 0.75)
+     • genre match: pop (+0.25)
+     • energy close to target (+0.17)
+     • produced/electronic match (+0.14)
+     • vocal match (+0.10)
+     • popular pick (+0.09)
+
+3. Rooftop Lights — Indigo Parade  (score: 0.65)
+     • mood match: happy (+0.20)
+     • energy close to target (+0.19)
+     • produced/electronic match (+0.10)
+     • vocal match (+0.09)
+     • popular pick (+0.07)
+
+4. Concrete Anthem — Kilo Verse  (score: 0.50)
+     • energy close to target (+0.20)
+     • produced/electronic match (+0.13)
+     • vocal match (+0.10)
+     • popular pick (+0.08)
+
+5. Storm Runner — Voltline  (score: 0.46)
+     • energy close to target (+0.18)
+     • produced/electronic match (+0.14)
+     • vocal match (+0.09)
+     • popular pick (+0.06)
 ```
+
+The results match expectations: the two pop songs (*Sunrise City*, *Gym Hero*)
+top the list because they win the genre rule, and *Sunrise City* leads overall
+by also matching mood, energy, sound, vocals, and popularity.
 
 **Screenshot or video** *(optional)*: <!-- Insert a screenshot or demo video link here -->
 

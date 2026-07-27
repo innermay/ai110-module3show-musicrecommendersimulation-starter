@@ -80,7 +80,7 @@ def _compute_score(
         total_weight += w
         if song_genre == pref_genre:
             points += w
-            reasons.append(f"matches your favorite genre ({song_genre})")
+            reasons.append(f"genre match: {song_genre} (+{w:.2f})")
 
     # Rule 2: mood match (categorical, all-or-nothing)
     if pref_mood is not None:
@@ -88,64 +88,60 @@ def _compute_score(
         total_weight += w
         if song_mood == pref_mood:
             points += w
-            reasons.append(f"fits your {song_mood} mood")
+            reasons.append(f"mood match: {song_mood} (+{w:.2f})")
 
     # Rule 3: energy fit (numeric, rewards *closeness* to the target)
     if pref_energy is not None:
         w = WEIGHTS["energy"]
         total_weight += w
         closeness = 1.0 - abs(song_energy - pref_energy)
-        points += closeness * w
+        earned = closeness * w
+        points += earned
         if closeness >= 0.85:
-            reasons.append("has an energy level very close to what you want")
+            reasons.append(f"energy close to target (+{earned:.2f})")
 
     # Rule 4: acoustic fit (boolean flips which end of the scale is "good")
     if likes_acoustic is not None:
         w = WEIGHTS["acoustic"]
         total_weight += w
         alignment = song_acousticness if likes_acoustic else (1.0 - song_acousticness)
-        points += alignment * w
+        earned = alignment * w
+        points += earned
         if alignment >= 0.6:
-            reasons.append(
-                "has the acoustic sound you like" if likes_acoustic
-                else "has the produced/electronic sound you prefer"
-            )
+            label = "acoustic match" if likes_acoustic else "produced/electronic match"
+            reasons.append(f"{label} (+{earned:.2f})")
 
     # Rule 5: instrumentalness fit
     if likes_instrumental is not None:
         w = WEIGHTS["instrumental"]
         total_weight += w
         alignment = song_instrumentalness if likes_instrumental else (1.0 - song_instrumentalness)
-        points += alignment * w
+        earned = alignment * w
+        points += earned
         if alignment >= 0.6:
-            reasons.append(
-                "is mostly instrumental, as you prefer" if likes_instrumental
-                else "features vocals, as you prefer"
-            )
+            label = "instrumental match" if likes_instrumental else "vocal match"
+            reasons.append(f"{label} (+{earned:.2f})")
 
     # Rule 6: popularity fit
     if prefers_popular is not None:
         w = WEIGHTS["popularity"]
         total_weight += w
         alignment = song_popularity if prefers_popular else (1.0 - song_popularity)
-        points += alignment * w
+        earned = alignment * w
+        points += earned
         if alignment >= 0.6:
-            reasons.append(
-                "is a popular, mainstream track" if prefers_popular
-                else "is a lesser-known, niche track"
-            )
+            label = "popular pick" if prefers_popular else "niche pick"
+            reasons.append(f"{label} (+{earned:.2f})")
 
     score = points / total_weight if total_weight > 0 else 0.0
     return score, reasons
 
 
 def _reasons_to_sentence(reasons: List[str]) -> str:
-    """Join reason fragments into one readable sentence."""
+    """Join reason fragments into one readable string."""
     if not reasons:
-        return "it is the closest available match to your preferences"
-    if len(reasons) == 1:
-        return reasons[0]
-    return ", ".join(reasons[:-1]) + ", and " + reasons[-1]
+        return "no strong matches; closest available option"
+    return "; ".join(reasons)
 
 
 class Recommender:
@@ -179,8 +175,9 @@ class Recommender:
         return [song for song, _ in scored[:k]]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
+        """Return a one-line, human-readable justification for a song's score."""
         score, reasons = self._score(user, song)
-        return f"Recommended (score {score:.2f}) because it {_reasons_to_sentence(reasons)}."
+        return f"Recommended (score {score:.2f}) — {_reasons_to_sentence(reasons)}"
 
 
 NUMERIC_FIELDS = (
@@ -227,15 +224,8 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     )
 
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """
-    Functional implementation: score every song, rank high -> low, return top k
-    as (song_dict, score, explanation). Required by src/main.py
-    """
-    scored = []
-    for song in songs:
-        score, reasons = score_song(user_prefs, song)
-        explanation = _reasons_to_sentence(reasons)
-        scored.append((song, score, explanation))
+def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, List[str]]]:
+    """Score every song, rank high->low, and return the top k as (song, score, reasons)."""
+    scored = [(song, *score_song(user_prefs, song)) for song in songs]
     scored.sort(key=lambda item: item[1], reverse=True)
     return scored[:k]
