@@ -6,9 +6,13 @@
 
 ---
 
-## 2. Intended Use
+## 2. Intended Use (and Non-Intended Use)
 
-VibeMatch generates a ranked, *explained* list of song recommendations from a small catalog based on an explicit user "taste profile" (favorite genre, mood, target energy, and preferences for acoustic sound, instrumental music, and mainstream popularity). It assumes the user can describe their taste up front, and it treats every listener as a single fixed set of preferences. **This is a classroom exploration tool, not a production system** — the goal is to understand how data becomes a recommendation, with every result fully explainable.
+**Goal / task.** VibeMatch predicts which songs a listener will like best. It takes a taste profile (favorite genre, mood, target energy, and whether the user likes acoustic, instrumental, or popular music) and returns a ranked, explained list of songs from a small catalog.
+
+**Intended use.** It is a classroom tool for learning how data becomes a recommendation. It assumes the user can describe their taste up front. Every result is fully explainable.
+
+**Non-intended use.** It should **not** be used as a real product or to make real choices for people. It should not be trusted to be fair, because the catalog is tiny and hand-made. It should not be used to judge artists, rank "good" vs. "bad" music, or personalize anything for real users. It has no real listening data, so it cannot actually learn what a person likes over time.
 
 ---
 
@@ -152,4 +156,12 @@ profile: {'energy': 0.5}
 
 ## 9. Personal Reflection
 
-*(Draft — personalize this.)* Building VibeMatch made recommender systems feel much less magical and much more like a transparent set of point rules. The most interesting discovery was the "Conflicting" profile: I assumed asking for high energy would guarantee an energetic song, but the genre and mood rules quietly overruled it — which showed me how much a system's *weights* silently encode someone's assumptions about what matters. It changed how I think about apps like Spotify: when a recommendation feels "off," it's often not broken, it's just optimizing for a different balance of signals than I expected.
+*(Draft — please edit into your own words.)*
+
+**My biggest learning moment.** The "Conflicting" profile surprised me the most. I asked for high energy but a sad mood, and the system gave me a slow, quiet song. I realized the genre and mood rules were quietly overruling the energy request. That taught me that the *weights* I pick are really just my own opinions about what matters most.
+
+**How AI tools helped, and when I double-checked them.** The AI assistant helped me write the CSV loader, the scoring function, and the ranking logic quickly, and it explained ideas like `.sort()` vs `sorted()`. But I had to double-check its work: it needed reminders to convert CSV numbers to floats, and when I added new features I had to make sure the tests still passed and the math still added up to a valid 0–1 score. I also checked that the recommendations actually made sense instead of just trusting the code ran.
+
+**What surprised me about simple algorithms.** There is no machine learning here — just points and sorting. But the output still *feels* like a real recommendation. Adding up a few numbers and ranking them is enough to look "smart," which made me realize how much of a recommender is just clear rules plus good data.
+
+**What I'd try next.** I'd add soft genre matching so related genres (like rock and metal) share credit, use a much bigger and more realistic dataset, and make the top results more diverse so I don't get five near-identical songs.
